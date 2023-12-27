@@ -1,4 +1,4 @@
-# Pixo-BackEnd
+# IWC-BackEnd
 
 ## Manual Installation
 
