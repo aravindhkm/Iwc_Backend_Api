@@ -204,7 +204,7 @@ const enrollMemberShip = catchAsync(async (req, res)=> {
       status: false,
       data: {
         estimateGas: 0,
-        message: "MemberShip cannot be greater than one"
+        message: "MemberShip cannot be less than one"
       },
     });
   }
@@ -277,7 +277,19 @@ const enrollLoyalty = catchAsync(async (req, res)=> {
     });
   }
 
-  const ownerOf = await whiskyNftInstance.methods.ownerOf(req.query.tokenId.toString()).call();
+  let ownerOf;
+
+  try {
+    ownerOf = await whiskyNftInstance.methods.ownerOf(req.query.tokenId.toString()).call();
+  } catch(e) {
+    return res.status(httpStatus.BAD_REQUEST).send({
+      status: false,
+      data: {
+        estimateGas: 0,
+        message: "nonexistent token"
+      },
+    })
+  }
 
   if(ownerOf.toString() != req.query.senderWallet.toString()) {
      return res.status(httpStatus.BAD_REQUEST).send({
@@ -344,7 +356,19 @@ const nftStore = catchAsync(async (req, res)=> {
     });
   }
 
-  const ownerOf = await whiskyNftInstance.methods.ownerOf(req.query.tokenId.toString()).call();
+  let ownerOf;
+
+  try {
+    ownerOf = await whiskyNftInstance.methods.ownerOf(req.query.tokenId.toString()).call();
+  } catch(e) {
+    return res.status(httpStatus.BAD_REQUEST).send({
+      status: false,
+      data: {
+        estimateGas: 0,
+        message: "nonexistent token"
+      },
+    })
+  }
 
   if(ownerOf.toString() != req.query.senderWallet.toString()) {
      return res.status(httpStatus.BAD_REQUEST).send({
