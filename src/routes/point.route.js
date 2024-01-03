@@ -12,17 +12,17 @@ router.get('/getReferralFeeDetails', validate(pointValidation.accountParams), po
 router.get('/getTransactionFeeByUser', validate(pointValidation.accountParams), pointController.getTransactionFeeByUser);
 router.get('/getUserInfo', validate(pointValidation.accountParams), pointController.getUserInfo);
 router.get('/getUserMembership', validate(pointValidation.accountParams), pointController.getUserMembership);
-router.get('/getUserStorageTokenEpoch', validate(pointValidation.getUserStorageTokenEpoch), pointController.getUserStorageTokenEpoch);
+router.get('/getStorageDetails', validate(pointValidation.getStorageDetails), pointController.getStorageDetails);
 router.get('/getUserTransactionFee', validate(pointValidation.accountParams), pointController.getUserTransactionFee);
 router.get('/loyaltyDetails', pointController.loyaltyDetails);
-router.get('/userStoredTokenIdStatus', validate(pointValidation.getUserStorageTokenEpoch), pointController.userStoredContains);
+router.get('/userStoredTokenIdStatus', validate(pointValidation.getStorageDetails), pointController.userStoredContains);
 router.get('/userStoredAllTokenId', validate(pointValidation.accountParams), pointController.userStoredToken);
 router.get('/userStoredTokenlength', validate(pointValidation.accountParams), pointController.userStoredTokenlength);
 
 // write method
 router.get('/beforeEnrollMemberShip', validate(pointValidation.enrollMemberShip), pointController.enrollMemberShip);
 router.get('/beforeEnrollLoyalty', validate(pointValidation.enrollLoyalty), pointController.enrollLoyalty);
-router.get('/beforeNftStore', validate(pointValidation.enrollLoyalty), pointController.nftStore);
+router.get('/beforeNftStore', validate(pointValidation.nftStore), pointController.nftStore);
 router.get('/beforeMemberShipPay', validate(pointValidation.senderWallet), pointController.memberShipPay);
 router.get('/getMemberShipPayAmount', validate(pointValidation.senderWallet), pointController.getMemberShipPayAmount);
 router.get('/beforeCollectStoredNft', validate(pointValidation.collectStoredNft), pointController.collectStoredNft);

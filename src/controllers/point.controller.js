@@ -20,6 +20,7 @@ const getLoyaltyDetails = catchAsync(async (req, res)=> {
   res.status(httpStatus.OK).send({
     status: true,
     data: {
+      nftAddress: result.nftAddress.toString(),
       tokenId: Number(result.tokenId),
       loyaltyEpoch: Number(result.loyaltyEpoch),
       status: result.status
@@ -96,13 +97,17 @@ const getUserMembership = catchAsync(async (req, res)=> {
   });
 });
 
-const getUserStorageTokenEpoch = catchAsync(async (req, res)=> {
-  const getUserStorageTokenEpoch = await pointInstance.methods.getUserStorageTokenEpoch(req.query.account.toString(),req.query.tokenId.toString()).call();
+const getStorageDetails = catchAsync(async (req, res)=> {
+  const getStorageDetails = await pointInstance.methods.getStorageDetails(req.query.storageId.toString()).call();
 
   res.status(httpStatus.OK).send({
     status: true,
     data: {
-      getUserStorageTokenEpoch: Number(getUserStorageTokenEpoch),
+      nftAddress : getStorageDetails.nftAddress,
+      account : getStorageDetails.account,
+      tokenId : Number(getStorageDetails.tokenId),
+      storageEpoch : Number(getStorageDetails.storageEpoch),
+      isCollected : getStorageDetails.isCollected,   
     },
   });
 });
@@ -133,7 +138,7 @@ const loyaltyDetails = catchAsync(async (req, res)=> {
 });
 
 const userStoredContains = catchAsync(async (req, res)=> {
-  const userStoredContains = await pointInstance.methods.userStoredContains(req.query.account.toString(),req.query.tokenId.toString()).call();
+  const userStoredContains = await pointInstance.methods.userStoredContains(req.query.account.toString(),req.query.storageId.toString()).call();
 
   res.status(httpStatus.OK).send({
     status: true,
@@ -257,6 +262,7 @@ const enrollLoyalty = catchAsync(async (req, res)=> {
 
   const userInfo = await pointInstance.methods.getUserInfo(req.query.senderWallet.toString()).call();
 
+  console.log("userInfo.memberShipEpoch", Number(userInfo.memberShipEpoch) );
   if(Number(userInfo.memberShipEpoch) == 0) {
     return res.status(httpStatus.BAD_REQUEST).send({
       status: false,
@@ -267,7 +273,7 @@ const enrollLoyalty = catchAsync(async (req, res)=> {
     });
   }
 
-  if(Number(req.query.memberShip) != 1) {
+  if(Number(userInfo.memberShip) != 1) {
     return res.status(httpStatus.BAD_REQUEST).send({
       status: false,
       data: {
@@ -278,9 +284,10 @@ const enrollLoyalty = catchAsync(async (req, res)=> {
   }
 
   let ownerOf;
+  let nftInstance = new currentWeb3.eth.Contract(whiskyNftAbi, req.query.nftAddress.toString());
 
   try {
-    ownerOf = await whiskyNftInstance.methods.ownerOf(req.query.tokenId.toString()).call();
+    ownerOf = await nftInstance.methods.ownerOf(req.query.tokenId.toString()).call();
   } catch(e) {
     return res.status(httpStatus.BAD_REQUEST).send({
       status: false,
@@ -301,8 +308,8 @@ const enrollLoyalty = catchAsync(async (req, res)=> {
      })
   }
 
-  const isApprovedForAll = await whiskyNftInstance.methods.isApprovedForAll(req.query.senderWallet.toString(),contract.whiskyPoint).call();
-  const getApproved = await whiskyNftInstance.methods.getApproved(req.query.tokenId.toString()).call();
+  const isApprovedForAll = await nftInstance.methods.isApprovedForAll(req.query.senderWallet.toString(),contract.whiskyPoint).call();
+  const getApproved = await nftInstance.methods.getApproved(req.query.tokenId.toString()).call();
   if(!isApprovedForAll && (getApproved.toString() != contract.whiskyPoint)) {
     return res.status(httpStatus.BAD_REQUEST).send({
       status: false,
@@ -317,7 +324,7 @@ const enrollLoyalty = catchAsync(async (req, res)=> {
     })
   }
 
-  const estimateGas = await pointInstance.methods.enrollLoyalty(req.query.tokenId.toString()).estimateGas({
+  const estimateGas = await pointInstance.methods.enrollLoyalty(req.query.nftAddress.toString(),req.query.tokenId.toString()).estimateGas({
     from: req.query.senderWallet.toString()
   });
 
@@ -344,22 +351,11 @@ const nftStore = catchAsync(async (req, res)=> {
     });
   }
 
-  const getUserStorageTokenEpoch = await pointInstance.methods.getUserStorageTokenEpoch(req.query.senderWallet.toString(),req.query.tokenId.toString()).call();
-
-  if(Number(getUserStorageTokenEpoch) != 0) {
-    return res.status(httpStatus.BAD_REQUEST).send({
-      status: false,
-      data: {
-        estimateGas: 0,
-        message: "Nft Already Stored"
-      },
-    });
-  }
-
   let ownerOf;
+  let nftInstance = new currentWeb3.eth.Contract(whiskyNftAbi, req.query.nftAddress.toString());
 
   try {
-    ownerOf = await whiskyNftInstance.methods.ownerOf(req.query.tokenId.toString()).call();
+    ownerOf = await nftInstance.methods.ownerOf(req.query.tokenId.toString()).call();
   } catch(e) {
     return res.status(httpStatus.BAD_REQUEST).send({
       status: false,
@@ -380,8 +376,8 @@ const nftStore = catchAsync(async (req, res)=> {
      })
   }
 
-  const isApprovedForAll = await whiskyNftInstance.methods.isApprovedForAll(req.query.senderWallet.toString(),contract.whiskyPoint).call();
-  const getApproved = await whiskyNftInstance.methods.getApproved(req.query.tokenId.toString()).call();
+  const isApprovedForAll = await nftInstance.methods.isApprovedForAll(req.query.senderWallet.toString(),contract.whiskyPoint).call();
+  const getApproved = await nftInstance.methods.getApproved(req.query.tokenId.toString()).call();
   if(!isApprovedForAll && (getApproved.toString() != contract.whiskyPoint)) {
     return res.status(httpStatus.BAD_REQUEST).send({
       status: false,
@@ -396,7 +392,7 @@ const nftStore = catchAsync(async (req, res)=> {
     })
   }
 
-  const estimateGas = await pointInstance.methods.nftStore(req.query.tokenId.toString()).estimateGas({
+  const estimateGas = await pointInstance.methods.nftStore(req.query.nftAddress.toString(),req.query.tokenId.toString()).estimateGas({
     from: req.query.senderWallet.toString()
   });
 
@@ -877,7 +873,7 @@ export default {
   userStoredContains,
   loyaltyDetails,
   getUserTransactionFee,
-  getUserStorageTokenEpoch,
+  getStorageDetails,
   getUserMembership,
   getUserInfo,
   getTransactionFeeByUser,

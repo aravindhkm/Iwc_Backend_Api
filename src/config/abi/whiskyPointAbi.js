@@ -15,27 +15,13 @@ export const whiskyPointAbi = [
   },
   {
     anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: 'address',
-        name: 'account',
-        type: 'address',
-      },
-    ],
+    inputs: [{ indexed: false, internalType: 'address', name: 'account', type: 'address' }],
     name: 'Paused',
     type: 'event',
   },
   {
     anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: 'address',
-        name: 'account',
-        type: 'address',
-      },
-    ],
+    inputs: [{ indexed: false, internalType: 'address', name: 'account', type: 'address' }],
     name: 'Unpaused',
     type: 'event',
   },
@@ -60,29 +46,27 @@ export const whiskyPointAbi = [
     stateMutability: 'view',
     type: 'function',
   },
+  { inputs: [], name: 'collectLoyaltyToken', outputs: [], stateMutability: 'nonpayable', type: 'function' },
+  { inputs: [], name: 'collectPoint', outputs: [], stateMutability: 'nonpayable', type: 'function' },
   {
-    inputs: [],
-    name: 'collectLoyaltyToken',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [],
-    name: 'collectPoint',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [{ internalType: 'uint256[]', name: 'tokenIds', type: 'uint256[]' }],
+    inputs: [{ internalType: 'uint256[]', name: 'storageIds', type: 'uint256[]' }],
     name: 'collectStoredNft',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',
   },
   {
-    inputs: [{ internalType: 'uint256', name: 'tokenId', type: 'uint256' }],
+    inputs: [],
+    name: 'currentStorageNft',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: 'nftAddress', type: 'address' },
+      { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
+    ],
     name: 'enrollLoyalty',
     outputs: [],
     stateMutability: 'nonpayable',
@@ -104,6 +88,7 @@ export const whiskyPointAbi = [
     outputs: [
       {
         components: [
+          { internalType: 'address', name: 'nftAddress', type: 'address' },
           { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
           { internalType: 'uint256', name: 'loyaltyEpoch', type: 'uint256' },
           { internalType: 'bool', name: 'status', type: 'bool' },
@@ -147,6 +132,26 @@ export const whiskyPointAbi = [
     type: 'function',
   },
   {
+    inputs: [{ internalType: 'uint256', name: 'storageId', type: 'uint256' }],
+    name: 'getStorageDetails',
+    outputs: [
+      {
+        components: [
+          { internalType: 'address', name: 'nftAddress', type: 'address' },
+          { internalType: 'address', name: 'account', type: 'address' },
+          { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
+          { internalType: 'uint256', name: 'storageEpoch', type: 'uint256' },
+          { internalType: 'bool', name: 'isCollected', type: 'bool' },
+        ],
+        internalType: 'struct WhiskyPoint.NftStorage',
+        name: '',
+        type: 'tuple',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
     inputs: [{ internalType: 'address', name: 'account', type: 'address' }],
     name: 'getTransactionFeeByUser',
     outputs: [{ internalType: 'uint256', name: 'transactionFee', type: 'uint256' }],
@@ -182,16 +187,6 @@ export const whiskyPointAbi = [
     type: 'function',
   },
   {
-    inputs: [
-      { internalType: 'address', name: 'account', type: 'address' },
-      { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
-    ],
-    name: 'getUserStorageTokenEpoch',
-    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
     inputs: [{ internalType: 'address', name: 'wallet', type: 'address' }],
     name: 'getUserTransactionFee',
     outputs: [
@@ -219,6 +214,13 @@ export const whiskyPointAbi = [
     type: 'function',
   },
   {
+    inputs: [{ internalType: 'address', name: 'account', type: 'address' }],
+    name: 'isWhiskyAdmin',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
     inputs: [],
     name: 'loyaltyHoldingDuration',
     outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
@@ -232,27 +234,30 @@ export const whiskyPointAbi = [
     stateMutability: 'view',
     type: 'function',
   },
+  { inputs: [], name: 'memberShipPay', outputs: [], stateMutability: 'nonpayable', type: 'function' },
   {
-    inputs: [],
-    name: 'memberShipPay',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [{ internalType: 'uint256', name: 'tokenId', type: 'uint256' }],
+    inputs: [
+      { internalType: 'address', name: 'nftAddress', type: 'address' },
+      { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
+    ],
     name: 'nftStore',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',
   },
   {
-    inputs: [],
-    name: 'pause',
-    outputs: [],
+    inputs: [
+      { internalType: 'address', name: '', type: 'address' },
+      { internalType: 'address', name: '', type: 'address' },
+      { internalType: 'uint256', name: '', type: 'uint256' },
+      { internalType: 'bytes', name: '', type: 'bytes' },
+    ],
+    name: 'onERC721Received',
+    outputs: [{ internalType: 'bytes4', name: '', type: 'bytes4' }],
     stateMutability: 'nonpayable',
     type: 'function',
   },
+  { inputs: [], name: 'pause', outputs: [], stateMutability: 'nonpayable', type: 'function' },
   {
     inputs: [],
     name: 'paused',
@@ -261,26 +266,14 @@ export const whiskyPointAbi = [
     type: 'function',
   },
   {
-    inputs: [
-      {
-        internalType: 'uint256',
-        name: 'newLoyaltyHoldingDuration',
-        type: 'uint256',
-      },
-    ],
+    inputs: [{ internalType: 'uint256', name: 'newLoyaltyHoldingDuration', type: 'uint256' }],
     name: 'setLoyaltyHoldingDuration',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',
   },
   {
-    inputs: [
-      {
-        internalType: 'uint64',
-        name: 'newLoyaltyHoldingPoint',
-        type: 'uint64',
-      },
-    ],
+    inputs: [{ internalType: 'uint64', name: 'newLoyaltyHoldingPoint', type: 'uint64' }],
     name: 'setLoyaltyHoldingPoint',
     outputs: [],
     stateMutability: 'nonpayable',
@@ -318,13 +311,6 @@ export const whiskyPointAbi = [
     type: 'function',
   },
   {
-    inputs: [{ internalType: 'address', name: 'newUsdc', type: 'address' }],
-    name: 'setUsdc',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
     inputs: [
       {
         components: [
@@ -357,23 +343,17 @@ export const whiskyPointAbi = [
     type: 'function',
   },
   {
-    inputs: [{ internalType: 'uint256', name: 'tokenId', type: 'uint256' }],
+    inputs: [{ internalType: 'uint256', name: 'storageId', type: 'uint256' }],
     name: 'storagePay',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',
   },
-  {
-    inputs: [],
-    name: 'unpause',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
+  { inputs: [], name: 'unpause', outputs: [], stateMutability: 'nonpayable', type: 'function' },
   {
     inputs: [
       { internalType: 'address', name: 'account', type: 'address' },
-      { internalType: 'uint256', name: 'tokenId', type: 'uint256' },
+      { internalType: 'uint256', name: 'storageId', type: 'uint256' },
     ],
     name: 'userStoredContains',
     outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
@@ -384,6 +364,16 @@ export const whiskyPointAbi = [
     inputs: [{ internalType: 'address', name: 'account', type: 'address' }],
     name: 'userStoredToken',
     outputs: [{ internalType: 'uint256[]', name: '', type: 'uint256[]' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'address', name: 'account', type: 'address' },
+      { internalType: 'uint256', name: 'index', type: 'uint256' },
+    ],
+    name: 'userStoredTokenByIndex',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
     stateMutability: 'view',
     type: 'function',
   },

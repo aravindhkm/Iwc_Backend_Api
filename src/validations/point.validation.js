@@ -12,10 +12,10 @@ const getPlatformFees = Joi.object().keys({
   }),
 })
 
-const getUserStorageTokenEpoch = Joi.object().keys({
+const getStorageDetails = Joi.object().keys({
   query: Joi.object().keys({
     account: Joi.string().required(),
-    tokenId: Joi.string().required(),
+    storageId: Joi.string().required(),
   }),
 })
 
@@ -29,6 +29,7 @@ const enrollMemberShip = Joi.object().keys({
 
 const enrollLoyalty = Joi.object().keys({
   query: Joi.object().keys({
+    nftAddress: Joi.string().required(),
     tokenId: Joi.string().required(),
     senderWallet: Joi.string().required(),
   }),
@@ -54,7 +55,16 @@ const collectStoredNft = Joi.object().keys({
   }),
 });
 
+const nftStore = Joi.object().keys({
+  query: Joi.object().keys({
+    nftAddress: Joi.string().required(),
+    tokenId: Joi.string().required(),
+    senderWallet: Joi.string().required(),
+  }),
+});
+
 export default {
+  nftStore,
   storagePay,
   collectStoredNft,
   senderWallet,
@@ -62,5 +72,5 @@ export default {
   enrollMemberShip,
   getPlatformFees,
   accountParams,
-  getUserStorageTokenEpoch,
+  getStorageDetails,
 }
