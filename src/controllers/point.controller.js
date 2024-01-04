@@ -150,11 +150,12 @@ const userStoredContains = catchAsync(async (req, res)=> {
 
 const userStoredToken = catchAsync(async (req, res)=> {
   const userStoredAllTokenId = await pointInstance.methods.userStoredToken(req.query.account.toString()).call();
+  const numberArrayWithParseInt = userStoredAllTokenId.map(bigNum => parseInt(bigNum));
 
   res.status(httpStatus.OK).send({
     status: true,
     data: {
-      userStoredAllTokenId: userStoredAllTokenId,
+      userStoredAllTokenId: numberArrayWithParseInt,
     },
   });
 });
@@ -532,13 +533,25 @@ const memberShipPay = catchAsync(async (req, res)=> {
 });
 
 const collectStoredNft = catchAsync(async (req, res)=> {
-  const tokenIds = JSON.parse(req.query.tokenIds);
+  const storageIds = JSON.parse(req.query.storageIds);
 
-  for(let i=0; i<tokenIds.length; i++) {
-    console.log("iteration", tokenIds[i]);
-    const userStoredToken = await pointInstance.methods.getUserStorageTokenEpoch(req.query.senderWallet.toString(),tokenIds[i]).call();
+  console.log("storageIds",storageIds);
+  console.log("storageIds.length",storageIds.length);
+  for(let i=0; i<storageIds.length; i++) {
+    console.log("iteration", storageIds[i]);
+    const getStorageDetails = await pointInstance.methods.getStorageDetails(storageIds[i]).call();
+    const userStoredContains = await pointInstance.methods.userStoredContains(req.query.senderWallet.toString(),storageIds[i]).call();
 
-    if(Number(userStoredToken) == 0) {
+    if(!userStoredContains) {
+      return res.status(httpStatus.BAD_REQUEST).send({
+        status: false,
+        data: {
+          message: "User does not have this NFT token Id"
+        },
+      });
+    }
+
+    if(Number(getStorageDetails.storageEpoch) == 0) {
       return res.status(httpStatus.BAD_REQUEST).send({
         status: false,
         data: {
@@ -547,16 +560,36 @@ const collectStoredNft = catchAsync(async (req, res)=> {
         },
       })
     }
+
+    if(getStorageDetails.account.toString() != req.query.senderWallet.toString()) {
+      return res.status(httpStatus.BAD_REQUEST).send({
+        status: false,
+        data: {
+          message: "Sender wallet is invalid. Please try again"
+        },
+      });
+    }
+
+    if(getStorageDetails.isCollected) {
+      return res.status(httpStatus.BAD_REQUEST).send({
+        status: false,
+        data: {
+          message: "Already collected"
+        },
+      });
+    }
   }
 
-  const estimateGas = await pointInstance.methods.collectStoredNft(req.query.tokenIds.toString()).estimateGas({
+  const estimateGas = await pointInstance.methods.collectStoredNft(JSON.parse(req.query.storageIds)).estimateGas({
     from: req.query.senderWallet.toString()
   });
+
+  console.log("estimateGas",estimateGas);
 
   res.status(httpStatus.OK).send({
     status: true,
     data: {
-      estimateGas: Number(0),
+      estimateGas: Number(estimateGas),
       message: "collectStoredNft successfully"
     },
   });
@@ -564,9 +597,9 @@ const collectStoredNft = catchAsync(async (req, res)=> {
 
 const getStoragePayAmount = catchAsync(async (req, res)=> {
   const userInfo = await pointInstance.methods.getUserInfo(req.query.senderWallet.toString()).call();
-  const userStoredContains = await pointInstance.methods.userStoredContains(req.query.senderWallet.toString(),req.query.tokenId.toString()).call();
+  const userStoredContains = await pointInstance.methods.userStoredContains(req.query.senderWallet.toString(),req.query.storageId.toString()).call();
   const getPlatformFees = await pointInstance.methods.getPlatformFees(Number(userInfo.memberShip)).call();
-  const userStoredTokenEpoch = await pointInstance.methods.getUserStorageTokenEpoch(req.query.senderWallet.toString(),req.query.tokenId.toString()).call();
+  const getStorageDetails = await pointInstance.methods.getStorageDetails(req.query.storageId.toString()).call();
 
   if(Number(userInfo.memberShipEpoch) == 0) {
     return res.status(httpStatus.BAD_REQUEST).send({
@@ -586,7 +619,7 @@ const getStoragePayAmount = catchAsync(async (req, res)=> {
     });
   }
 
-  if(Number(userStoredTokenEpoch) == 0) {
+  if(Number(getStorageDetails.storageEpoch) == 0) {
     return res.status(httpStatus.BAD_REQUEST).send({
       status: false,
       data: {
@@ -605,8 +638,7 @@ const getStoragePayAmount = catchAsync(async (req, res)=> {
     });
   }
   
-  let memberShipEpoch = Number(userStoredTokenEpoch);
-
+  let memberShipEpoch = Number(getStorageDetails.storageEpoch);
   const currentEpochTimeSeconds = Math.floor(new Date().getTime() / 1000);
   let totalDuration = 0;
   while(memberShipEpoch + duration <= currentEpochTimeSeconds) {
@@ -659,9 +691,9 @@ const getStoragePayAmount = catchAsync(async (req, res)=> {
 
 const storagePay = catchAsync(async (req, res)=> {
   const userInfo = await pointInstance.methods.getUserInfo(req.query.senderWallet.toString()).call();
-  const userStoredContains = await pointInstance.methods.userStoredContains(req.query.senderWallet.toString(),req.query.tokenId.toString()).call();
+  const userStoredContains = await pointInstance.methods.userStoredContains(req.query.senderWallet.toString(),req.query.storageId.toString()).call();
   const getPlatformFees = await pointInstance.methods.getPlatformFees(Number(userInfo.memberShip)).call();
-  const userStoredTokenEpoch = await pointInstance.methods.getUserStorageTokenEpoch(req.query.senderWallet.toString(),req.query.tokenId.toString()).call();
+  const getStorageDetails = await pointInstance.methods.getStorageDetails(req.query.storageId.toString()).call();
 
   if(Number(userInfo.memberShipEpoch) == 0) {
     return res.status(httpStatus.BAD_REQUEST).send({
@@ -683,7 +715,7 @@ const storagePay = catchAsync(async (req, res)=> {
     });
   }
 
-  if(Number(userStoredTokenEpoch) == 0) {
+  if(Number(getStorageDetails.storageEpoch) == 0) {
     return res.status(httpStatus.BAD_REQUEST).send({
       status: false,
       data: {
@@ -703,7 +735,7 @@ const storagePay = catchAsync(async (req, res)=> {
     });
   }
   
-  let memberShipEpoch = Number(userStoredTokenEpoch);
+  let memberShipEpoch = Number(getStorageDetails.storageEpoch);
 
   const currentEpochTimeSeconds = Math.floor(new Date().getTime() / 1000);
   let totalDuration = 0;
@@ -747,7 +779,7 @@ const storagePay = catchAsync(async (req, res)=> {
     }
   }
 
-  const estimateGas = await pointInstance.methods.storagePay(req.query.tokenId.toString()).estimateGas({
+  const estimateGas = await pointInstance.methods.storagePay(req.query.storageId.toString()).estimateGas({
     from: req.query.senderWallet.toString()
   });
 

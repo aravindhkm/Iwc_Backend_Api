@@ -43,7 +43,7 @@ const senderWallet = Joi.object().keys({
 
 const storagePay = Joi.object().keys({
   query: Joi.object().keys({
-    tokenId: Joi.string().required(),
+    storageId: Joi.string().required(),
     senderWallet: Joi.string().required(),
   }),
 });
@@ -51,7 +51,7 @@ const storagePay = Joi.object().keys({
 const collectStoredNft = Joi.object().keys({
   query: Joi.object().keys({
     senderWallet: Joi.string().required(),
-    tokenIds: Joi.array().items(Joi.number()),
+    storageIds: Joi.array().items(Joi.number()),
   }),
 });
 
